@@ -13,8 +13,52 @@ import {
   Text
 } from 'react-native';
 import {Actions} from 'react-native-router-flux'
+var {height, width} = Dimensions.get('window')
 export default class ChildDetails extends Component<{}> {
-    state={language:''};
+  constructor(props){
+    super(props)
+    this.state={
+      CName:'',
+      cGender:'',
+      cAge:'',
+      cIDMark:''
+    }
+  }
+
+  UpdateComponeentVal(Value,num)
+  {
+    switch (num) {
+      case 1:{ this.setState({CName:Value})
+        break;
+      }
+      case 2:{ this.setState({cIDMark:Value})
+        break;
+      }
+     default:
+
+    }
+  }
+  setResults(results){
+      alert(results.success)
+    }
+  SubmitAction()
+  {
+    console.log('http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/admin_action.php?f=createComplaintp&cp_relationship='+this.props.Relationship+'&cp_name='+this.props.Name+'&cp_phone_no='+this.props.phno+'&cp_email_id='+this.props.email+
+        '&cp_address='+this.props.address+'&cp_complaint_type='+this.props.complianttype+'&cp_district='+this.props.location+'&cp_compliant_details='+this.props.summary+'&cp_resp_name='+this.props.RName+'&cp_resp_phone_no='+this.props.Rphno+'&cp_resp_email_id='+this.props.Remail+'&cp_resp_address='+this.props.address +'&cd_name='+this.state.CName+
+        '&cd_gender='+ this.state.cGender +'&cd_age='+ this.state.cAge +'&cd_indentification='+this.state.cIDMark)
+    fetch('http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/admin_action.php?f=createComplaintp&cp_relationship='+this.props.Relationship+'&cp_name='+this.props.Name+'&cp_phone_no='+this.props.phno+'&cp_email_id='+this.props.email+
+        '&cp_address='+this.props.address+'&cp_complaint_type='+this.props.complianttype+'&cp_district='+this.props.location+'&cp_compliant_details='+this.props.summary+'&cp_resp_name='+this.props.RName+'&cp_resp_phone_no='+this.props.Rphno+'&cp_resp_email_id='+this.props.Remail+'&cp_resp_address='+this.props.address +'&cd_name='+this.state.CName+
+        '&cd_gender='+ this.state.cGender +'&cd_age='+ this.state.cAge +'&cd_indentification='+this.state.cIDMark ,{
+        method:'POST'
+  }).then((re)=>this.setResults(re))
+}
+componentWillMount()
+{
+  alert(this.props.RName+'*'+this.props.Rphno+'*'+this.props.Remail+'*'+
+    this.props.Raddress+'*'+this.props.Relationship+'*'+this.props.Name+'*'+this.props.phno+'*'+this.props.email+
+    this.props.address+'*'+this.props.complianttype+'*'+this.props.location+'*'+this.props.summary)
+}
+
   render() {
     return (
   <View style={styles.container}>
@@ -28,11 +72,12 @@ export default class ChildDetails extends Component<{}> {
     style={styles.textInputStyle}
     autoCapitalize="none"
     autoCorrect={false}
+     onChangeText={(text)=>this.UpdateComponeentVal(text,1)}
     onSubmitEditing={()=> this.ChildInfoInput.focus()}/>
     <Picker
       style={styles.textInputStyle}
-      selectedValue={this.state.language}
-      onValueChange={(itemValue, itemIndex) => this.setState({language: itemValue})}>
+      selectedValue={this.state.cGender}
+      onValueChange={(itemValue, itemIndex) => this.setState({cGender: itemValue})}>
       <Picker.Item label="Select gender" value="0" />
 			<Picker.Item  label="Male" value="Male"/>
 			<Picker.Item  label="Female" value="Female"/>
@@ -41,8 +86,8 @@ export default class ChildDetails extends Component<{}> {
 
     <Picker
       style={styles.textInputStyle}
-      selectedValue={this.state.language}
-      onValueChange={(itemValue, itemIndex) => this.setState({language: itemValue})}>
+      selectedValue={this.state.cAge}
+      onValueChange={(itemValue, itemIndex) => this.setState({cAge: itemValue})}>
       <Picker.Item label="Select Age" value="" />
       <Picker.Item  label="0" Select Age/>
 												<Picker.Item  label="1" value="1" />
@@ -74,12 +119,13 @@ export default class ChildDetails extends Component<{}> {
     multiline={true}
     maxLength={150}
     ref={(input)=> this.ChildInfoInput =input}
+     onChangeText={(text)=>this.UpdateComponeentVal(text,2)}
     onSubmitEditing={()=> this.ComplaintInput.focus()}/>
   </KeyboardAvoidingView>
       <View>
   <TouchableHighlight
     style={styles.ButtonStyle}
-  onPress={Actions.ComplaintDetailsEdit}
+  onPress={()=>this.SubmitAction()}
   underlayColor='#6E1307'>
   <Text   style={styles.btntextInputStyle}>Submit</Text>
   </TouchableHighlight>
@@ -110,9 +156,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent:'center',
     alignSelf: 'stretch',
-    width: null,
+    width: width,
     padding:20,
     backgroundColor:"#B73527",
+    height:height
 
   },
   formstyle:{

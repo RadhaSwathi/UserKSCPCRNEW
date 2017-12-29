@@ -8,33 +8,50 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Keyboard,
-  Alert
+  Alert,
+  Image,
+  TouchableOpacity,
 } from 'react-native';
 import {Actions} from 'react-native-router-flux'
+var {height, width} = Dimensions.get('window')
 export default class ComplaintStatus extends Component<{}> {
   state={ComplaintId:'',
-  complaintDetails: []};
+  complaintDetails: [],status:0};
   setComplaintNumber(ComplaintId){
       this.setState({
         ComplaintId:ComplaintId
       })
     }
+
+fetchComplaintStatus(ComplaintId)
+{
+  fetch(`http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/fetch_complaints_complaint_id_wise.php?cp_id=${ComplaintId}`)
+  .then(response => response.json()).then(data => this.setState({complaintDetails:data}));
+  this.state.complaintDetails.map(ComplaintDetail => this.setState({status:ComplaintDetail.cp_status}))
+alert(this.state.status)
+return this.state.status;
+}
+
     submitComplaintId(ComplaintId)
     {
-      Keyboard.dismiss();
-
-        fetch(`http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/fetch_complaints_complaint_id_wise.php?cp_id=${ComplaintId}`)
-        .then(response => response.json()).then(data => this.setState({complaintDetails:data}));
-        var status;
+        Keyboard.dismiss();
         var str="resolved";
-        this.state.complaintDetails.map(ComplaintDetail =>
-    status=ComplaintDetail.cp_status)
-    if(status==1)
-    {
-      str="Active"
-    }
-
-      Alert.alert(
+       if(this.fetchComplaintStatus(ComplaintId)==1)
+       {
+           var str="Active";
+           setTimeout(() => {Alert.alert(
+             'Complaint status',
+             'Complaint status is '+str,
+             [
+               {text:'Complaint details', onPress:()=>this.routeself(2,ComplaintId)},
+               {text:'Home', onPress:()=>this.routeself(1)},
+               {text:'Cancel', onPress:()=>this.routeself(0)},
+             ],
+           )},1000);
+       }
+       else if(  this.fetchComplaintStatus(ComplaintId)==0)
+       {
+      setTimeout(() => {Alert.alert(
         'Complaint status',
         'Complaint status is '+str,
         [
@@ -42,7 +59,11 @@ export default class ComplaintStatus extends Component<{}> {
           {text:'Home', onPress:()=>this.routeself(1)},
           {text:'Cancel', onPress:()=>this.routeself(0)},
         ],
-      )
+      )},1000);
+    }
+    else {
+      alert('Inavlid ticket number')
+    }
 
 
     }
@@ -57,9 +78,15 @@ switch(input)
     }
   render() {
     return (
-  <ImageBackground source={require('../images/LoginBg.jpeg')} style={styles.container}>
+  <ImageBackground source={require('../images/loginnBg.jpeg')} style={styles.container}>
+  <TouchableOpacity  style={styles.logotouch} underlayColor='#000000' onPress={ ()=>{ Linking.openURL('http://wbdemo.in/kscpcr-v1.3/eng_ver/about-us.php')}} >
+    <Image source={require('../images/l1.png')} style={styles.logo}/>
+    </TouchableOpacity>
+    <TouchableOpacity underlayColor='#000000'  style={styles.logotouch} >
+    <Image source={require('../images/l2.png')} style={styles.logo}/>
+    </TouchableOpacity>
   <TextInput placeholder='Enter complaint Number'
-    placeholderTextColor='rgba(255,255,255,255)'
+    placeholderTextColor='rgba(0,0,0,0)'
     style={styles.input}
     onChangeText={(text)=>this.setComplaintNumber(text)}/>
   <View style={styles.buttonContainer}>
@@ -76,13 +103,47 @@ switch(input)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent:'center',
     alignSelf: 'stretch',
-    width: null,
+    width: width,
     paddingVertical:0,
+    height:height
   },
   buttonContainer:{
+    borderRadius:10,
   paddingVertical:15,
-  marginBottom:10
+  marginLeft:25,
+  marginRight:25,
+  marginBottom:0,
+  shadowColor:'#d9d9d9',
+  shadowRadius:6,
+  shadowOffset:{width:5,height:5,}
+},
+input:{
+  marginLeft:25,
+  marginRight:25,
+},
+logo:{
+  height:100,
+  width:100,
+  marginTop:10,
+  paddingVertical:0,
+  opacity:80,
+  resizeMode:'contain',
+  shadowColor:'#000',
+  shadowRadius:6,
+  shadowOpacity:0.8,
+  shadowOffset:{width:0,height:2,},
+},
+logotouch:{
+  height:120,
+  width:120,
+  shadowColor:'#000',
+  shadowRadius:6,
+  shadowOpacity:0.8,
+  shadowOffset:{width:0,height:2,},
+  marginTop:10,
+  paddingVertical:0,
+  opacity:80,
+
 }
 });

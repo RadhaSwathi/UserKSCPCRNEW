@@ -14,10 +14,10 @@ const RouterComponent =()=>{
 return(
   <Router >
       <Scene key='root'>
-        <Scene  key='Home'  component={Home} hideNavBar={true}   />
-        <Scene  key='ComplaintStatus' component={ComplaintStatus} sceneStyle={{paddingTop:200}}  navigationBarStyle={styles.NavStyle}  title='Complaint status' sceneStyle={{top:60}}   />
+        <Scene  key='Home' initial component={Home} hideNavBar={true}   />
+        <Scene  key='ComplaintStatus' component={ComplaintStatus}  navigationBarStyle={styles.NavStyle} titleStyle={styles.NavTitle} title='Complaint status' sceneStyle={{top:60}}   />
         <Scene key='ComplaintDetails' sceneStyle={{top:150}} component={ComplaintDetails} title='Complaint Details' />
-        <Scene key='ComplaintDetailsEdit' initial component={ComplaintDetailsEdit} title='Complaint Detail' />
+        <Scene key='ComplaintDetailsEdit'  component={ComplaintDetailsEdit} title='Complaint Detail' />
         <Scene key='RespondentDetails' component={RespondentDetails} title='Respondent Detail' />
         <Scene key='ChildDetails' component={ChildDetails} title='Child Details' />
       </Scene>
@@ -30,6 +30,14 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     backgroundColor:'transparent',
     borderBottomWidth: 0,
+    flex:1,
+    flexDirection:'row'
+
+  },
+  NavTitle:{
+  fontSize:15,
+  fontWeight:'bold',
+  alignSelf:'center'
 
   }
 });

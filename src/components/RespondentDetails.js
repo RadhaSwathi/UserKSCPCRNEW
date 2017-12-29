@@ -13,12 +13,48 @@ import {
   Text
 } from 'react-native';
 import {Actions} from 'react-native-router-flux'
+var {height, width} = Dimensions.get('window')
 export default class RespondentDetails extends Component<{}> {
-    state={language:''};
-    componentWillMount()
-    {
-      alert(this.props.Name+this.props.phno)
+  constructor(props){
+    super(props)
+    this.state={
+      RName:'',
+      Rphno:'',
+      Remail:'',
+      Raddress:''
     }
+}
+    componentWillMount()
+     {
+       alert(this.props.Relationship+this.props.Name+this.props.phno+this.props.email+this.props.address+'8888'+this.props.complianttype+'***'+this.props.location+this.props.summary)
+     }
+
+     UpdateComponeentVal(Value,num)
+     {
+       switch (num) {
+         case 1:{ this.setState({RName:Value})
+           break;
+         }
+         case 2:{ this.setState({Rphno:Value})
+           break;
+         }
+         case 3:{ this.setState({Remail:Value})
+           break;
+         }
+         case 4:{ this.setState({Raddress:Value})
+           break;
+         }
+        default:
+
+       }
+     }
+gotoChildDetails()
+{
+    Actions.ChildDetails({RName:this.state.RName,Rphno:this.state.Rphno,Remail:this.state.Remail,
+      Raddress:this.state.Raddress,Relationship:this.props.Relationship,Name:this.props.Name,phno:this.props.phno,email:this.props.email,
+      address:this.props.address,complianttype:this.props.complianttype,location:this.props.location,summary:this.props.summary})
+}
+
   render() {
     return (
   <View style={styles.container}>
@@ -32,6 +68,7 @@ export default class RespondentDetails extends Component<{}> {
     style={styles.textInputStyle}
     autoCapitalize="none"
     autoCorrect={false}
+    onChangeText={(text)=>this.UpdateComponeentVal(text,1)}
     onSubmitEditing={()=> this.phoneInput.focus()}/>
 
     <TextInput placeholder='Respondent Phone Number'
@@ -39,6 +76,7 @@ export default class RespondentDetails extends Component<{}> {
     returnKeyType="next"
     style={styles.textInputStyle}
 ref={(input)=> this.phoneInput =input}
+onChangeText={(text)=>this.UpdateComponeentVal(text,2)}
 onSubmitEditing={()=> this.EmailInput.focus()} />
 
     <TextInput placeholder='Respondent email address'
@@ -49,6 +87,7 @@ onSubmitEditing={()=> this.EmailInput.focus()} />
     autoCapitalize="none"
     autoCorrect={false}
     ref={(input)=> this.EmailInput =input}
+    onChangeText={(text)=>this.UpdateComponeentVal(text,3)}
     onSubmitEditing={()=> this.AddressInput.focus()}/>
 
     <TextInput placeholder='RespondentAddress'
@@ -60,12 +99,13 @@ onSubmitEditing={()=> this.EmailInput.focus()} />
     multiline={true}
     maxLength={150}
     ref={(input)=> this.AddressInput =input}
+    onChangeText={(text)=>this.UpdateComponeentVal(text,4)}
     onSubmitEditing={()=> this.ComplaintInput.focus()}/>
   </KeyboardAvoidingView>
 <View style={{marginTop:20}}>
   <TouchableHighlight
     style={styles.ButtonStyle}
-  onPress={Actions.ChildDetails}
+  onPress={()=>this.gotoChildDetails()}
   underlayColor='#6E1307'>
   <Text   style={styles.btntextInputStyle}>Save and continue</Text>
   </TouchableHighlight>
@@ -96,9 +136,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent:'center',
     alignSelf: 'stretch',
-    width: null,
+    width: width,
     padding:20,
     backgroundColor:"#B73527",
+    height:height
 
   },
   formstyle:{
