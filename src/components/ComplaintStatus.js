@@ -11,60 +11,113 @@ import {
   Alert,
   Image,
   TouchableOpacity,
+  BackHandler,
+  Linking
 } from 'react-native';
 import {Actions} from 'react-native-router-flux'
 var {height, width} = Dimensions.get('window')
+var LogoWidth = (width/4 +50)
+var Logoheight = (height/4 -16)
+var halfheight =( height/2-30)
 export default class ComplaintStatus extends Component<{}> {
-  state={ComplaintId:'',
-  complaintDetails: [],status:0};
+  constructor(props){
+    super(props)
+    this.currentRouteName='ComplaintStatusKan';
+    this.backButtonListener = null;
+      this.lastBackButtonPress = null;
+    this.state={
+      ComplaintId:'',
+      status:'',
+      complaintDetails:[],
+    }
+}
+componentDidMount() {
+this.backButtonListener=BackHandler.addEventListener('hardwareBackPress', () => {
+
+            if (this.currentRouteName !== 'Main') {
+
+Actions.pop();
+return true;
+            }
+
+            if (this.lastBackButtonPress + 2000 >= new Date().getTime()) {
+                BackHandler.exitApp();
+                return true;
+            }
+            this.lastBackButtonPress = new Date().getTime();
+
+            return true;
+        });
+    }
+    componentWillUnmount() {
+          this.backButtonListener.remove();
+      }
   setComplaintNumber(ComplaintId){
       this.setState({
         ComplaintId:ComplaintId
       })
     }
-
-fetchComplaintStatus(ComplaintId)
-{
-  fetch(`http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/fetch_complaints_complaint_id_wise.php?cp_id=${ComplaintId}`)
-  .then(response => response.json()).then(data => this.setState({complaintDetails:data}));
-  this.state.complaintDetails.map(ComplaintDetail => this.setState({status:ComplaintDetail.cp_status}))
-alert(this.state.status)
-return this.state.status;
-}
-
-    submitComplaintId(ComplaintId)
+    setSatus(status)
     {
-        Keyboard.dismiss();
-        var str="resolved";
-       if(this.fetchComplaintStatus(ComplaintId)==1)
-       {
+      this.setState({
+        status:status
+      })
+    }
+
+
+async fetchComplaintStatus(ComplaintId)
+{
+try{
+   const response= await fetch(`http://kscpcr.com/complaints/actions_android/fetch_complaints_complaint_id_wise.php?cp_id=${this.state.ComplaintId}`);
+    const json=await response.json();
+    const success = await json.success;
+
+    if(success==undefined)
+    {
+
+   this.setSatus(json[0].cp_status)
+   if(json[0].cp_status==1)
+  {
            var str="Active";
-           setTimeout(() => {Alert.alert(
-             'Complaint status',
-             'Complaint status is '+str,
+    Alert.alert(
+     'Complaint status',
+     'Complaint status is Active',
              [
                {text:'Complaint details', onPress:()=>this.routeself(2,ComplaintId)},
                {text:'Home', onPress:()=>this.routeself(1)},
                {text:'Cancel', onPress:()=>this.routeself(0)},
              ],
-           )},1000);
-       }
-       else if(  this.fetchComplaintStatus(ComplaintId)==0)
+   )
+  }
+  else if(json[0].cp_status==0)
        {
-      setTimeout(() => {Alert.alert(
-        'Complaint status',
-        'Complaint status is '+str,
+  Alert.alert(
+   'Complaint status',
+   'Complaint status is Resolved',
         [
           {text:'Complaint details', onPress:()=>this.routeself(2,ComplaintId)},
           {text:'Home', onPress:()=>this.routeself(1)},
           {text:'Cancel', onPress:()=>this.routeself(0)},
         ],
-      )},1000);
+ )
     }
+  }
     else {
-      alert('Inavlid ticket number')
+alert('Inavlid ticket number')
     }
+}
+catch(e)
+{
 
+}
+
+}
+
+    submitComplaintId(ComplaintId)
+    {
+        Keyboard.dismiss();
+        var str='';
+   this.fetchComplaintStatus(ComplaintId).done()
 
     }
     routeself(input,ComplaintId)
@@ -79,14 +132,23 @@ switch(input)
   render() {
     return (
   <ImageBackground source={require('../images/loginnBg.jpeg')} style={styles.container}>
-  <TouchableOpacity  style={styles.logotouch} underlayColor='#000000' onPress={ ()=>{ Linking.openURL('http://wbdemo.in/kscpcr-v1.3/eng_ver/about-us.php')}} >
+  <View  style={styles.flexRowWrap}  >
+  <View style={styles.imageLeft}>
+  <TouchableOpacity  style={styles.logotouch} underlayColor='#000000' onPress={ ()=>{ Linking.openURL('http://kscpcr.com')}} >
     <Image source={require('../images/l1.png')} style={styles.logo}/>
     </TouchableOpacity>
+     </View>
+     <View style={styles.imageRight}>
     <TouchableOpacity underlayColor='#000000'  style={styles.logotouch} >
     <Image source={require('../images/l2.png')} style={styles.logo}/>
     </TouchableOpacity>
-  <TextInput placeholder='Enter complaint Number'
-    placeholderTextColor='rgba(0,0,0,0)'
+  </View>
+     </View>
+
+  <View  style={styles.BodyContent} >
+   <KeyboardAvoidingView behavior="padding">
+<TextInput placeholder='Enter complaint Number'
+    placeholderTextColor='#000000'
     style={styles.input}
     onChangeText={(text)=>this.setComplaintNumber(text)}/>
   <View style={styles.buttonContainer}>
@@ -94,6 +156,9 @@ switch(input)
     title="Get status"
   onPress={()=>this.submitComplaintId(this.state.ComplaintId)}/>
     </View>
+    </KeyboardAvoidingView >
+    </View>
+
   </ImageBackground>
 
     );
@@ -108,6 +173,11 @@ const styles = StyleSheet.create({
     paddingVertical:0,
     height:height
   },
+  BodyContent :{
+justifyContent:'center',
+top:halfheight/4,
+
+   },
   buttonContainer:{
     borderRadius:10,
   paddingVertical:15,
@@ -145,5 +215,31 @@ logotouch:{
   paddingVertical:0,
   opacity:80,
 
+},
+flexRowWrap: {
+  flexDirection: 'row',
+  justifyContent:'space-between',
+  alignItems:'center',
+  padding:20,
+},
+flexRowWrapBottom: {
+  flexDirection: 'row',
+  justifyContent:'space-between',
+  alignItems:'center',
+  padding:20,
+  position:'absolute',
+  bottom:0
+},
+imageRight:{
+  flex:1,
+  flexDirection: 'row',
+  justifyContent:'flex-end',
+  alignItems:'center',
+},
+imageLeft:{
+  flex:1,
+  flexDirection: 'row',
+  justifyContent:'flex-start',
+  alignItems:'center',
 }
 });

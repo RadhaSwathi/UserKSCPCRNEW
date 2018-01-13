@@ -10,13 +10,17 @@ import {
   ScrollView,
   Picker,
   TouchableHighlight,
-  Text
+  Text,
+  BackHandler
 } from 'react-native';
 import {Actions} from 'react-native-router-flux'
 var {height, width} = Dimensions.get('window')
 export default class RespondentDetails extends Component<{}> {
   constructor(props){
     super(props)
+    this.currentRouteName='RespondentDetailsKan';
+    this.backButtonListener = null;
+      this.lastBackButtonPress = null;
     this.state={
       RName:'',
       Rphno:'',
@@ -24,10 +28,28 @@ export default class RespondentDetails extends Component<{}> {
       Raddress:''
     }
 }
-    componentWillMount()
-     {
-       alert(this.props.Relationship+this.props.Name+this.props.phno+this.props.email+this.props.address+'8888'+this.props.complianttype+'***'+this.props.location+this.props.summary)
-     }
+componentDidMount() {
+this.backButtonListener=BackHandler.addEventListener('hardwareBackPress', () => {
+
+            if (this.currentRouteName !== 'Main') {
+
+Actions.popTo('ComplaintDetailsEdit');
+return true;
+            }
+
+            if (this.lastBackButtonPress + 2000 >= new Date().getTime()) {
+                BackHandler.exitApp();
+                return true;
+            }
+            this.lastBackButtonPress = new Date().getTime();
+
+            return true;
+        });
+    }
+    componentWillUnmount() {
+
+          this.backButtonListener.remove();
+      }
 
      UpdateComponeentVal(Value,num)
      {
@@ -50,9 +72,30 @@ export default class RespondentDetails extends Component<{}> {
      }
 gotoChildDetails()
 {
+  if(this.state.RName!=''&&this.state.Rphno!=''&&this.state.Remail!=''&&this.state.Raddress!='')
+  {
     Actions.ChildDetails({RName:this.state.RName,Rphno:this.state.Rphno,Remail:this.state.Remail,
       Raddress:this.state.Raddress,Relationship:this.props.Relationship,Name:this.props.Name,phno:this.props.phno,email:this.props.email,
-      address:this.props.address,complianttype:this.props.complianttype,location:this.props.location,summary:this.props.summary})
+      address:this.props.address,complianttype:this.props.complianttype,location:this.props.location,summary:this.props.summary,OTPInputText:this.props.OTPInputText})
+    }
+    else {
+      var str='Respondent'
+        if(this.state.RName==''&&this.state.Rphno==''&&this.state.Remail==''&&this.state.Raddress=='')
+        {
+          alert('All fields are mandatory')
+        }
+        else{
+        if(this.state.RName=='')
+        str+=' Name,'
+        if(this.state.Rphno=='')
+        str+=' Phno,'
+        if(this.state.Remail=='')
+        str+=' Email,'
+        if(this.state.Raddress=='')
+        str+=' Address'
+        alert(str+' are mandatory')
+      }
+    }
 }
 
   render() {

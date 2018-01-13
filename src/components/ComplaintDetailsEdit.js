@@ -10,7 +10,8 @@ import {
   ScrollView,
   Picker,
   TouchableHighlight,
-  Text
+  Text,
+  BackHandler
 } from 'react-native';
 import {Actions} from 'react-native-router-flux'
 var {height, width} = Dimensions.get('window')
@@ -19,6 +20,9 @@ export default class ComplaintDetailsEdit extends Component<{}> {
 
   constructor(props){
     super(props)
+    this.currentRouteName='ComplaintDetailsEdit';
+    this.backButtonListener = null;
+      this.lastBackButtonPress = null;
     this.state={
       Relationship:'',
       Name:'',
@@ -29,7 +33,8 @@ export default class ComplaintDetailsEdit extends Component<{}> {
       location:'',
       summary:'',
       locations:[],
-      ctypes:[]
+      ctypes:[],
+      OTPInputText:''
     }
 }
     //state={Relationship:'',Name:'',phno:'',email:'',address:'',complianttype:'',location:'',summary:'',locations:[],ctypes:[]};
@@ -51,6 +56,9 @@ export default class ComplaintDetailsEdit extends Component<{}> {
         case 5:{ this.setState({summary:Value})
           break;
         }
+        case 6:{ this.setState({OTPInputText:Value})
+          break;
+        }
 
         default:
 
@@ -58,30 +66,86 @@ export default class ComplaintDetailsEdit extends Component<{}> {
     }
     gotoRespondentDetails()
     {
-      alert(this.state.complianttype)
-      Actions.RespondentDetails({Relationship:this.state.Relationship,Name:this.state.Name,phno:this.state.phno,email:this.state.email,address:this.state.address,complianttype:this.state.complianttype,location:this.state.location,summary:this.state.summary})
+
+      if(this.state.location!=''&&this.state.Relationship!=''&&this.state.Name!=''&&this.state.phno!=''&&this.state.email!=''&&this.state.address!=''&&this.state.complainttype!=''&&this.state.summary!=''&&this.state.OTPInputText!='')
+      {
+      Actions.RespondentDetails({Relationship:this.state.Relationship,Name:this.state.Name,phno:this.state.phno,email:this.state.email,address:this.state.address,complianttype:this.state.complainttype,location:this.state.location,summary:this.state.summary,OTPInputText:this.state.OTPInputText})
+    }
+    else if(this.state.location==''&&this.state.Relationship==''&&this.state.Name==''&&this.state.phno==''&&this.state.email==''&&this.state.address==''&&this.state.complainttype==''&&this.state.summary==''&&this.state.OTPInputText==''){
+      alert('All fields are mandatory')
+    }
+    else {
+      var str=''
+      if(this.state.location=='')
+      str+='Location,'
+      if(this.state.Relationship=='')
+      str+='Relationship,'
+      if(this.state.Name=='')
+      str+='Name,'
+      if(this.state.phno=='')
+      str+='Phone number,'
+      if(this.state.email=='')
+      str+='Email address,'
+      if(this.state.address=='')
+    str+='address,'
+      if(this.state.complainttype=='')
+      str+='complaint type,'
+      if(this.state.summary=='')
+      str+='summary,'
+      if(this.state.OTPInputText=='')
+      str+='OTP'
+      alert(str+' are mandatory')
+    }
     }
     renderLocation()
     {
-      fetch('http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/fetch_all_locations.php').then(response => response.json())
+  //    console.log("inside render")
+  try{
+      fetch('http://kscpcr.com/complaints/actions_android/fetch_all_locations.php').then(response => response.json())
     .then(data => this.setState({ locations: data }));
+  }
+    catch(e)
+    {
+
+    }
+    //this.state.locations.map(lcnt =>  console.log(lcnt.district_name +'---->'+lcnt.district_id) )
     return  this.state.locations.map(lcnt =>   <Picker.Item label={lcnt.district_name} key={lcnt.district_id} value={lcnt.district_id} /> )
 
     }
     Complaintype()
     {
-      fetch('http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/fetch_all_complaints.php').then(response => response.json())
-    .then(data => this.setState({ ctypes: data }));
-    return  this.state.ctypes.map(ctyp =>   <Picker.Item label={ctyp.ct_type} key={ctyp.ct_id} value={ctyp.ct_id} /> );
+      try{
+        fetch('http://kscpcr.com/complaints/actions_android/fetch_all_complaints.php').then(response => response.json())
+      .then(data => this.setState({ ctypes: data }));
+      return  this.state.ctypes.map(ctyp =>   <Picker.Item label={ctyp.ct_type} key={ctyp.ct_id} value={ctyp.ct_id} /> )
+      }
+      catch(e)
+      {
+
+      }
 
     }
+    componentDidMount() {
+    this.backButtonListener=BackHandler.addEventListener('hardwareBackPress', () => {
 
-    updateComplainttype(value,index)
-    {
-      this.setState(complianttype:value)
-      alert(this.state.complianttype)
+                if (this.currentRouteName !== 'Main') {
 
-    }
+    Actions.Home();
+    return true;
+                }
+
+                if (this.lastBackButtonPress + 2000 >= new Date().getTime()) {
+                    BackHandler.exitApp();
+                    return true;
+                }
+                this.lastBackButtonPress = new Date().getTime();
+
+                return true;
+            });
+        }
+        componentWillUnmount() {
+              this.backButtonListener.remove();
+          }
   render() {
     return (
   <View style={styles.container}>
@@ -163,7 +227,16 @@ export default class ComplaintDetailsEdit extends Component<{}> {
     multiline={true}
     maxLength={150}
      onChangeText={(text)=>this.UpdateComponeentVal(text,5)}
+     onSubmitEditing={()=> this.OTPInput.focus()}
     ref={(input)=> this.ComplaintInput =input}/>
+    <TextInput placeholder='Enter OTP'
+    placeholderTextColor='#000000'
+    returnKeyType="next"
+    style={styles.textInputStyle}
+    autoCapitalize="none"
+    autoCorrect={false}
+     onChangeText={(text)=>this.UpdateComponeentVal(text,6)}
+    ref={(input)=> this.OTPInput =input}/>
   </KeyboardAvoidingView>
 <View style={{marginTop:20}}>
   <TouchableHighlight

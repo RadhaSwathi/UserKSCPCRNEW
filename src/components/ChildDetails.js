@@ -10,21 +10,55 @@ import {
   ScrollView,
   Picker,
   TouchableHighlight,
-  Text
+  Text,
+  Alert,
+  BackHandler,
+  NativeModules,
 } from 'react-native';
+
+var ImagePicker = NativeModules.ImageCropPicker;
+//var ImagePicker = NativeModules.ImageCropPicker;
 import {Actions} from 'react-native-router-flux'
 var {height, width} = Dimensions.get('window')
+
+
 export default class ChildDetails extends Component<{}> {
   constructor(props){
     super(props)
+    this.currentRouteName='ChildDetails';
+    this.backButtonListener = null;
+      this.lastBackButtonPress = null;
     this.state={
       CName:'',
       cGender:'',
       cAge:'',
-      cIDMark:''
+      cIDMark:'',
+      loading:false,
+      cImg:null,
+      image:null,
     }
   }
+  componentDidMount() {
+this.backButtonListener=BackHandler.addEventListener('hardwareBackPress', () => {
 
+              if (this.currentRouteName !== 'Main') {
+
+Actions.pop();
+return true;
+              }
+
+              if (this.lastBackButtonPress + 2000 >= new Date().getTime()) {
+                  BackHandler.exitApp();
+                  return true;
+              }
+              this.lastBackButtonPress = new Date().getTime();
+
+              return true;
+          });
+      }
+      componentWillUnmount() {
+            this.backButtonListener.remove();
+        }
   UpdateComponeentVal(Value,num)
   {
     switch (num) {
@@ -39,26 +73,91 @@ export default class ChildDetails extends Component<{}> {
     }
   }
   setResults(results){
-      alert(results.success)
-    }
-  SubmitAction()
-  {
-    console.log('http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/admin_action.php?f=createComplaintp&cp_relationship='+this.props.Relationship+'&cp_name='+this.props.Name+'&cp_phone_no='+this.props.phno+'&cp_email_id='+this.props.email+
-        '&cp_address='+this.props.address+'&cp_complaint_type='+this.props.complianttype+'&cp_district='+this.props.location+'&cp_compliant_details='+this.props.summary+'&cp_resp_name='+this.props.RName+'&cp_resp_phone_no='+this.props.Rphno+'&cp_resp_email_id='+this.props.Remail+'&cp_resp_address='+this.props.address +'&cd_name='+this.state.CName+
-        '&cd_gender='+ this.state.cGender +'&cd_age='+ this.state.cAge +'&cd_indentification='+this.state.cIDMark)
-    fetch('http://wbdemo.in/kscpcr-v1.3/complaints/actions_android/admin_action.php?f=createComplaintp&cp_relationship='+this.props.Relationship+'&cp_name='+this.props.Name+'&cp_phone_no='+this.props.phno+'&cp_email_id='+this.props.email+
-        '&cp_address='+this.props.address+'&cp_complaint_type='+this.props.complianttype+'&cp_district='+this.props.location+'&cp_compliant_details='+this.props.summary+'&cp_resp_name='+this.props.RName+'&cp_resp_phone_no='+this.props.Rphno+'&cp_resp_email_id='+this.props.Remail+'&cp_resp_address='+this.props.address +'&cd_name='+this.state.CName+
-        '&cd_gender='+ this.state.cGender +'&cd_age='+ this.state.cAge +'&cd_indentification='+this.state.cIDMark ,{
-        method:'POST'
-  }).then((re)=>this.setResults(re))
-}
-componentWillMount()
-{
-  alert(this.props.RName+'*'+this.props.Rphno+'*'+this.props.Remail+'*'+
-    this.props.Raddress+'*'+this.props.Relationship+'*'+this.props.Name+'*'+this.props.phno+'*'+this.props.email+
-    this.props.address+'*'+this.props.complianttype+'*'+this.props.location+'*'+this.props.summary)
-}
 
+    }
+    pickSingle(cropit, circular=false) {
+      ImagePicker.openPicker({
+        width: 300,
+        height: 300,
+        cropping: cropit,
+        cropperCircleOverlay: circular,
+        compressImageMaxWidth: 640,
+        compressImageMaxHeight: 480,
+        compressImageQuality: 0.5,
+        compressVideoPreset: 'MediumQuality',
+        includeExif: true,
+      }).then(image => {
+        alert('received image');
+        this.setState({
+          image: {uri: image.path, width: image.width, height: image.height, mime: image.mime},
+          images: null
+        });
+      }).catch(e => {
+        console.log(e);
+        Alert.alert(e.message ? e.message : e);
+      });
+    }
+async  SubmitAction()
+  {
+      if(this.state.CName!=''&& this.state.cGender !=''&& this.state.cAge !=''&&this.state.cIDMark!='' )
+      {
+
+        if(this.state.loading==false)
+        {
+          this.setState({loading:true})
+              try{
+                let img = new FormData();
+                img.append('file', {filename: 'image.jpg',
+                filepath: this.state.image.uri,
+                contentType: 'image/jpeg', });
+                console.log(`http://kscpcr.com/complaints/actions_android/admin_action.php?f=createComplaint&otp_code=${this.props.OTPInputText}&cp_phone_no=${this.props.phno}&cp_relationship=${this.props.Relationship}&cp_name=${this.props.Name}&cp_email_id=${this.props.email}
+                        &cp_address=${this.props.address}&cp_complaint_type=${this.props.complianttype}&cp_district=${this.props.location}&cp_compliant_details=${this.props.summary}&otp_code=${this.props.OTPInputText}&cp_resp_name=${this.props.RName}&cp_resp_phone_no=${this.props.Rphno}&cp_resp_email_id=${this.props.Remail}&cp_resp_address=${this.props.address}&cd_name=${this.state.CName}
+                        &cd_gender=${this.state.cGender}+&cd_age=${this.state.cAge}&cd_indentification=${this.state.cIDMark}&cd_photo=${img}`)
+const response=  await  fetch(`http://kscpcr.com/complaints/actions_android/admin_action.php?f=createComplaint&otp_code=${this.props.OTPInputText}&cp_phone_no=${this.props.phno}&cp_relationship=${this.props.Relationship}&cp_name=${this.props.Name}&cp_email_id=${this.props.email}
+        &cp_address=${this.props.address}&cp_complaint_type=${this.props.complianttype}&cp_district=${this.props.location}&cp_compliant_details=${this.props.summary}&otp_code=${this.props.OTPInputText}&cp_resp_name=${this.props.RName}&cp_resp_phone_no=${this.props.Rphno}&cp_resp_email_id=${this.props.Remail}&cp_resp_address=${this.props.address}&cd_name=${this.state.CName}
+        &cd_gender=${this.state.cGender}+&cd_age=${this.state.cAge}&cd_indentification=${this.state.cIDMark}&cd_photo=${img}`)
+
+        const json=await response.json();
+
+        const success = await json.success;
+        alert(success + response.status)
+        if (response.status==200 && success==0) {
+            this.setState({loading:false})
+          alert('Oops! something went wrong. Please retry after sometime')
+          Actions.Home()
+        }
+      else
+        {
+          alert('Thank you for registering your complaint. You will receive complaint ID via SMS shortly',)
+            this.setState({loading:false})
+          Actions.Home()
+        }
+
+}
+      catch(e)
+      {
+
+      }
+}
+else{
+  alert('Please wait while we process our complaint')
+}
+}
+else if(this.state.CName==''&& this.state.cGender ==''&& this.state.cAge ==''&&this.state.cIDMark=='')
+alert('All fields are mandatory')
+  else{
+    var str='Child'
+  if(this.state.CName=='')
+  str+=' Name,'
+  if(this.state.cGender=='')
+  str+=' Gender,'
+  if(this.state.cAge=='')
+  str+=' Age,'
+  if(this.state.cIDMark=='')
+  str+=' ID Mark'
+  alert(str+' are mandatory')
+}
+}
   render() {
     return (
   <View style={styles.container}>
@@ -121,18 +220,22 @@ componentWillMount()
     ref={(input)=> this.ChildInfoInput =input}
      onChangeText={(text)=>this.UpdateComponeentVal(text,2)}
     onSubmitEditing={()=> this.ComplaintInput.focus()}/>
+    <TouchableHighlight
+      style={styles.ButtonStyle} onPress={() => this.pickSingle(false)} >
+        <Text style={styles.btntextInputStyle}>Upload photo</Text>
+      </TouchableHighlight>
   </KeyboardAvoidingView>
       <View>
   <TouchableHighlight
     style={styles.ButtonStyle}
   onPress={()=>this.SubmitAction()}
   underlayColor='#6E1307'>
-  <Text   style={styles.btntextInputStyle}>Submit</Text>
+  <Text   style={styles.btntextInputStyle} >Submit</Text>
   </TouchableHighlight>
 
   <TouchableHighlight
     style={styles.ButtonStyle}
-  onPress={Actions.ComplaintDetailsEdit}
+  onPress={Actions.RespondentDetails}
   underlayColor='#6E1307'>
   <Text   style={styles.btntextInputStyle}>Previous</Text>
   </TouchableHighlight>
@@ -141,7 +244,7 @@ componentWillMount()
     style={styles.ButtonStyle}
   onPress={Actions.Home}
    underlayColor='#6E1307'>
-  <Text   style={styles.btntextInputStyle}>Cancel</Text>
+  <Text   style={styles.btntextInputStyle}>Go to Home</Text>
   </TouchableHighlight>
 </View>
   </ScrollView>

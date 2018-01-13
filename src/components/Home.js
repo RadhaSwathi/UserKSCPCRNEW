@@ -11,27 +11,69 @@ import {
   StatusBar,
   Image,
   TouchableOpacity,
-  Linking
+  Linking,
+  BackHandler
 } from 'react-native';
 import {Actions} from 'react-native-router-flux'
 var {height, width} = Dimensions.get('window')
 var LogoWidth = (width/4 +50)
 var Logoheight = (height/4 -16)
+var halfheight =( height/2-30)
 
 export default class Home extends Component<{}> {
+  constructor(props){
+    super(props)
+    this.currentRouteName='Main';
+    this.backButtonListener = null;
+      this.lastBackButtonPress = null;
+
+}
+componentDidMount() {
+this.backButtonListener=BackHandler.addEventListener('hardwareBackPress', () => {
+
+            if (this.currentRouteName !== 'Main') {
+return true;
+            }
+
+            if (this.lastBackButtonPress + 2000 >= new Date().getTime()) {
+                BackHandler.exitApp();
+                return true;
+            }
+            this.lastBackButtonPress = new Date().getTime();
+
+            return true;
+        });
+    }
+    componentWillUnmount() {
+          this.backButtonListener.remove();
+      }
   render() {
     return (
   <ImageBackground source={require('../images/loginnBg.jpeg')} style={styles.container}>
-<TouchableOpacity  style={styles.logotouch} underlayColor='#000000' onPress={ ()=>{ Linking.openURL('http://wbdemo.in/kscpcr-v1.3/eng_ver/about-us.php')}} >
+  <View  style={styles.flexRowWrap}  >
+  <View style={styles.imageLeft}>
+<TouchableOpacity   underlayColor='#000000' onPress={ ()=>{ Linking.openURL('http://kscpcr.com')}} >
   <Image source={require('../images/l1.png')} style={styles.logo}/>
   </TouchableOpacity>
-  <TouchableOpacity underlayColor='#000000'  style={styles.logotouch} >
+     </View>
+     <View style={styles.imageRight}>
+  <TouchableOpacity underlayColor='#000000'   >
   <Image source={require('../images/l2.png')} style={styles.logo}/>
   </TouchableOpacity>
+  </View>
+     </View>
+     <View  style={styles.BodyContent} >
   <View style={styles.textContent} >
   <Text style={styles.WelcomText}> Welcome to KSCPCR</Text>
-  <Text style={styles.WelcomTexts}> Karnataka state  for protection of child rights </Text>
   </View>
+  <View  style={styles.flexRowWrap}  >
+  <View style={styles.imageRight}>
+  <TouchableOpacity underlayColor='#000000'   onPress={Actions.HomeKan}>
+  <Image source={require('../images/Kannada.jpeg')} style={styles.language}/>
+  </TouchableOpacity>
+  </View>
+  </View>
+
   <View style={styles.buttonContainer}>
   <Button color="#6E1307"
     title="Check complaint status"
@@ -41,8 +83,16 @@ export default class Home extends Component<{}> {
   <View style={styles.buttonContainer}>
   <Button color="#6E1307"
     title="Register new complaint"
-  onPress={Actions.ComplaintDetailsEdit}/>
+  onPress={Actions.ConfirmMobile}/>
     </View>
+    </View>
+    <View  style={styles.flexRowWrapBottom}  >
+       <View style={styles.imageRight}>
+    <TouchableOpacity underlayColor='#000000'   >
+    <Image source={require('../images/UnicefLogo.jpeg')} style={styles.logo}/>
+    </TouchableOpacity>
+    </View>
+       </View>
   </ImageBackground>
 
     );
@@ -56,6 +106,9 @@ const styles = StyleSheet.create({
     width: null,
     height:height
   },
+  BodyContent :{
+justifyContent:'center',
+   },
   buttonContainer:{
     borderRadius:8,
   paddingVertical:15,
@@ -81,7 +134,8 @@ color:'#000000',
     justifyContent:'center',
 },
 textContent:{
-  marginBottom:90
+alignSelf:'center',
+alignItems:'center'
 },
 logo:{
   height:100,
@@ -90,10 +144,6 @@ logo:{
   paddingVertical:0,
   opacity:80,
   resizeMode:'contain',
-  shadowColor:'#000',
-  shadowRadius:6,
-  shadowOpacity:0.8,
-  shadowOffset:{width:0,height:2,},
 },
 logotouch:{
   height:120,
@@ -105,6 +155,39 @@ logotouch:{
   marginTop:10,
   paddingVertical:0,
   opacity:80,
+},
+flexRowWrap: {
+  flexDirection: 'row',
+  justifyContent:'space-between',
+  alignItems:'center',
+  padding:20,
+},
+flexRowWrapBottom: {
+  flexDirection: 'row',
+  justifyContent:'space-between',
+  alignItems:'center',
+  padding:20,
+  position:'absolute',
+  bottom:0
+},
+imageRight:{
+  flex:1,
+  flexDirection: 'row',
+  justifyContent:'flex-end',
+  alignItems:'center',
+},
+imageLeft:{
+  flex:1,
+  flexDirection: 'row',
+  justifyContent:'flex-start',
+  alignItems:'center',
+},
+language:
+{
+height:80,
+width:40,
+resizeMode:'contain',
 
 }
+
 });
